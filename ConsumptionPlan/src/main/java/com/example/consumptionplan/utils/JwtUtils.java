@@ -1,6 +1,8 @@
 package com.example.consumptionplan.utils;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,8 +48,18 @@ public class JwtUtils {
         try {
             parseToken(token);
             return true;
-        } catch (Exception e) {
+        } catch (ExpiredJwtException e) {
+            return false;
+        } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
+    }
+
+    /**
+     * 解析 token 并返回 userId，异常直接向上抛出（不含 try-catch），
+     * 由调用方（Filter）按类型区分：ExpiredJwtException=已过期，其他 JwtException=非法
+     */
+    public Long parseTokenOrThrow(String token) {
+        return parseToken(token);
     }
 }
